@@ -3,12 +3,13 @@ package model.dao.impl;
 import db.DbException;
 import model.Department;
 import model.Seller;
-import model.dao.Dao;
+import model.dao.SellerDao;
 
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
 
-public class SellerDaoJDBC implements Dao<Seller> {
+public class SellerDaoJDBC implements SellerDao {
 
     private final Connection conn;
 
@@ -74,5 +75,31 @@ public class SellerDaoJDBC implements Dao<Seller> {
     @Override
     public List<Seller> findAll() {
         return null;
+    }
+
+    @Override
+    public List<Seller> findByDepartment(Department department) {
+        try (
+            PreparedStatement st = conn.prepareStatement("""
+                    SELECT seller.*, department.Name as DepName
+                    FROM seller
+                    INNER JOIN department ON seller.DepartmentId = department.Id
+                    WHERE DepartmentId = ?
+                    ORDER BY seller.name;
+                    """)
+        ) {
+            st.setInt(1, department.getId());
+
+            ResultSet rs = st.executeQuery();
+
+            List<Seller> sellers = new ArrayList<>();
+            while (rs.next()){
+                sellers.add(instantiateSeller(rs, department));
+            }
+            return sellers;
+
+        } catch (SQLException e) {
+            throw new DbException(e.getMessage());
+        }
     }
 }

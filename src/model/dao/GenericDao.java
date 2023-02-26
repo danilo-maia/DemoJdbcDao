@@ -2,7 +2,7 @@ package model.dao;
 
 import java.util.List;
 
-public interface Dao<T> {
+interface GenericDao<T> {
     void insert(T obj);
     void update(T obj);
     void deleteById(Integer id);
